@@ -15,8 +15,7 @@ class Messaggio:
     def help(self, chat_id):
         self.bot.sendMessage(chat_id,
                         "<b> Comandi del bot</b>\n\n"
-                        "/lista_utenti - riporta la lista degli utenti del gruppo con a fianco il loro periodo di inattività\n\n"
-                        "/tempo_inattivo nome - per sapere l'inattività dello specifico utente\n\n"
+                        "/lista_inattivi - riporta la lista degli utenti del gruppo con a fianco il loro periodo di inattività\n\n"
                         "/status_inattivo - Per sapere il tuo tempo di inattività\n\n"
                         "<b> Comandi admin</b>\n\n"
                         "/setTempo tempo - Setta il periodo massimo per il ban dell'utente\n\n", parse_mode='HTML')

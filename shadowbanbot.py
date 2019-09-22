@@ -53,7 +53,7 @@ class Shadowbanbot():
 
         try:
             lascia_chat = msg['left_chat_member']['id']
-            if lascia_chat == 970458962:
+            if lascia_chat == id_bot:
                 self.database.rimuovi_gruppo(chat_id)
             else:
                 self.database.rimuovi_utente(msg['from']['id'], chat_id)
@@ -111,7 +111,7 @@ class Shadowbanbot():
 
         self.lista_utenti = self.database.ritorna_lista_utenti(chat_id)
 
-        if msg['text'].startswith('/start'):
+        if msg['text'].startswith('/start') or msg['text']==('/start@shadowbanbot'):
             self.messaggio.impostazioni(chat_id, "Ciao benvenuto nel shadow ban bot dove potrai gestire in maniera automatica gli utenti inattivi del tuo gruppo\n\n❗❗❗❗❗❗❗❗\n<b>N.B Il bot deve essere admin o non funzionerà</b>\n❗❗❗❗❗❗❗❗\n\nvers 1.1", self.gruppo, inlinekeyboard=self.messaggio.creaInlinekeyboard())
 
         elif str(msg['text'].lower()).startswith('/setinattivita'):
