@@ -53,7 +53,7 @@ class Shadowbanbot():
 
         try:
             lascia_chat = msg['left_chat_member']['id']
-            if lascia_chat == id_bot:
+            if lascia_chat == 970458962:
                 self.database.rimuovi_gruppo(chat_id)
             else:
                 self.database.rimuovi_utente(msg['from']['id'], chat_id)
@@ -115,7 +115,7 @@ class Shadowbanbot():
             self.messaggio.impostazioni(chat_id, "Ciao benvenuto nel shadow ban bot dove potrai gestire in maniera automatica gli utenti inattivi del tuo gruppo\n\n❗❗❗❗❗❗❗❗\n<b>N.B Il bot deve essere admin o non funzionerà</b>\n❗❗❗❗❗❗❗❗\n\nvers 1.1", self.gruppo, inlinekeyboard=self.messaggio.creaInlinekeyboard())
 
         elif str(msg['text'].lower()).startswith('/setinattivita'):
-            if informazioni_utente['status'] != 'creator' and informazioni_utente['status'] != 'administrator':
+            if informazioni_utente['status'] == 'creator' or informazioni_utente['status'] == 'administrator':
                 dato=self.messaggio.isVuoto(msg['text'])
                 if dato is None:
                     self.messaggio.impostazioni(chat_id, "Non hai segnato nessun tempo <b>" + msg['from']['first_name'] + " </b>", self.gruppo)
@@ -124,6 +124,9 @@ class Shadowbanbot():
                         self.nuovo_tempo=int(dato)
                     except:
                         self.messaggio.impostazioni(chat_id, "Errore! Devi inserire un numero <b>" + msg['from']['first_name'] + "</b>", self.gruppo)
+                        return
+                    if self.nuovo_tempo<=0:
+                        self.messaggio.impostazioni(chat_id, "Errore! Devi inserire un numero maggiore di zero <b>" + msg['from']['first_name'] + "</b>", self.gruppo)
                         return
                     self.set_time(msg['chat']['username'],False,chat_id)
             else:
@@ -312,7 +315,7 @@ class Shadowbanbot():
                     self.database.rimuovi_utente(utente_database.id_utente, utente_database.id_gruppo)
 
             else:
-                for utente_database in gruppo[1]:
+                for utente_database in gruppo[2]:
                     utentePresente=False
                     for utente_presente in gruppo_attuale:
                         if utente_presente.id_utente==utente_database.id_utente:
@@ -320,7 +323,7 @@ class Shadowbanbot():
                             break
                     if not utentePresente:
                         self.database.rimuovi_utente(utente_database.id_utente, utente_database.id_gruppo)
-            t.sleep(20)
+            t.sleep(10)
 
         return
 
