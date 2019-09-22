@@ -18,8 +18,8 @@ Questa sezione descrive i passaggi necessari per far funzionare il bot sul vostr
 
 Vai su telegram e apri [@BotFather](https://t.me/botfather)
 
--/new e segui tutti i passaggi per creare il bot
--Una volta creato ti verrà fornito un token che dovrai inserire in tokenbot.py
+1. /new e segui tutti i passaggi per creare il bot
+2. Una volta creato ti verrà fornito un token che dovrai inserire in tokenbot.py
 
 ## Installazione:
 
