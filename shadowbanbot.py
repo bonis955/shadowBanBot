@@ -53,7 +53,7 @@ class Shadowbanbot():
 
         try:
             lascia_chat = msg['left_chat_member']['id']
-            if lascia_chat == 970458962:
+            if lascia_chat == id_bot:
                 self.database.rimuovi_gruppo(chat_id)
             else:
                 self.database.rimuovi_utente(msg['from']['id'], chat_id)
