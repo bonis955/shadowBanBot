@@ -1,0 +1,5 @@
+pyperclip
+psycopg2
+telepot
+telethon
+schedule
