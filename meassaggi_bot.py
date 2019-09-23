@@ -18,10 +18,11 @@ class Messaggio:
                         "/lista_inattivi - riporta la lista degli utenti del gruppo con a fianco il loro periodo di inattività\n\n"
                         "/status_inattivo - Per sapere il tuo tempo di inattività\n\n"
                         "<b> Comandi admin</b>\n\n"
+                        "/settimezone timezone - Setta il fuso orario per visualizzare l'ora corretta" 
                         "/setTempo tempo - Setta il periodo massimo per il ban dell'utente\n\n", parse_mode='HTML')
 
     def isVuoto(self, msg):
-        vettore = str(msg).split(" ")
+        vettore = str(" ".join(msg.split())).split(" ")
         try:
             dato = vettore[1]
         except:

@@ -14,6 +14,9 @@ c.execute("""CREATE TABLE utenti(
 c.execute("""CREATE TABLE gruppi(     
       id_gruppo BIGINT PRIMARY KEY ,
       data_massima_settata Text,
-      punizione Text)""")
+      punizione Text,
+      lingua Text,
+      fuso_orario Text
+      )""")
 
 

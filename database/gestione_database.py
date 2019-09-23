@@ -16,7 +16,7 @@ class Gestione_database():
             self.gestore_database.execute("SELECT * FROM gruppi")
             gruppi = self.gestore_database.fetchall()
             for gruppo in gruppi:
-                self.gestore_database.execute("SELECT * FROM utenti WHERE id_gruppo=%s AND data_ban=%s",[int(gruppo[0]),datetime.now().strftime("%x")])
+                self.gestore_database.execute("SELECT * FROM utenti WHERE id_gruppo=%s AND data_ban=%s",[int(gruppo[0]),datetime.now().astimezone().strftime("%x")])
                 dati=self.gestore_database.fetchall()
                 self.gestore_database.execute("SELECT * FROM utenti WHERE id_gruppo=%s", [int(gruppo[0])])
                 dati2 = self.gestore_database.fetchall()
@@ -46,7 +46,19 @@ class Gestione_database():
 
     def aggiungi_gruppo(self, id_gruppo):
         with self.connect:
-            self.gestore_database.execute("INSERT INTO gruppi VALUES(%s,%s,%s)", [id_gruppo, 7, "ban"])
+            self.gestore_database.execute("INSERT INTO gruppi VALUES(%s,%s,%s,%s,%s)", [id_gruppo, 7, "ban","italiano","Europe/Rome"])
+            self.connect.commit()
+
+    def aggiorna_lingua(self,lingua,id_gruppo):
+        with self.connect:
+            self.gestore_database.execute("UPDATE gruppi SET lingua=%s  WHERE id_gruppo=%s",
+                                          [lingua,id_gruppo])
+            self.connect.commit()
+
+    def aggiorna_fuso_orario(self,fuso_orario,id_gruppo):
+        with self.connect:
+            self.gestore_database.execute("UPDATE gruppi SET fuso_orario=%s  WHERE id_gruppo=%s",
+                                          [fuso_orario,id_gruppo])
             self.connect.commit()
 
     def aggiorna_gruppo(self, gruppo):

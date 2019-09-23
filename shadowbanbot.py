@@ -1,4 +1,7 @@
+#vers 1.2
+
 from tokenbot import *
+from database.convertitore import ora_attuale
 import telepot
 from operator import  attrgetter
 from utente import Utente
@@ -9,11 +12,10 @@ import psycopg2
 from telepot.namedtuple import *
 from database.gestione_database import Gestione_database
 import schedule
-from database.convertitore import *
 import time as t
 import threading
 from meassaggi_bot import Messaggio
-from datetime import datetime, date, time, timedelta
+from datetime import datetime, timedelta
 
 class Shadowbanbot():
     lista_utenti=list()
@@ -27,7 +29,7 @@ class Shadowbanbot():
         thread = threading.Thread(target=self.run_threaded)
         thread.start()
         #schedule.every().second.do(self.controlla_ban)
-        schedule.every().days.at("23:55").do(self.controlla_ban)
+        schedule.every().days.at(orario_script).do(self.controlla_ban)
 
     def attiva_database(self):
         connect = psycopg2.connect(DATABASE_URL, sslmode='require')
@@ -101,7 +103,7 @@ class Shadowbanbot():
                     user=self.ritorna_utente(chat_id, msg['from']['id'], msg['from']['first_name'])
                     self.database.aggiungi_membro(user)
             else:
-                utente.data_ban=self.nuova_data_ban(datetime.now())
+                utente.data_ban=self.nuova_data_ban(ora_attuale(self.gruppo.fuso_orario))
                 self.database.aggiorna_membro(utente)
 
         try:
@@ -112,13 +114,13 @@ class Shadowbanbot():
         self.lista_utenti = self.database.ritorna_lista_utenti(chat_id)
 
         if msg['text'].startswith('/start') or msg['text']==('/start@shadowbanbot'):
-            self.messaggio.impostazioni(chat_id, "Ciao benvenuto nel shadow ban bot dove potrai gestire in maniera automatica gli utenti inattivi del tuo gruppo\n\n❗❗❗❗❗❗❗❗\n<b>N.B Il bot deve essere admin o non funzionerà</b>\n❗❗❗❗❗❗❗❗\n\nvers 1.1", self.gruppo, inlinekeyboard=self.messaggio.creaInlinekeyboard())
+            self.messaggio.impostazioni(chat_id, "Ciao benvenuto nel shadow ban bot dove potrai gestire in maniera automatica gli utenti inattivi del tuo gruppo\n\n❗❗❗❗❗❗❗❗\n<b>N.B IL BOT DEVE ESSERE AMMINISTRATORE O NON FUNZIONERÀ</b>\n❗❗❗❗❗❗❗❗\n\nvers 1.2", self.gruppo, inlinekeyboard=self.messaggio.creaInlinekeyboard())
 
         elif str(msg['text'].lower()).startswith('/setinattivita'):
             if informazioni_utente['status'] == 'creator' or informazioni_utente['status'] == 'administrator':
                 dato=self.messaggio.isVuoto(msg['text'])
                 if dato is None:
-                    self.messaggio.impostazioni(chat_id, "Non hai segnato nessun tempo <b>" + msg['from']['first_name'] + " </b>", self.gruppo)
+                    self.messaggio.impostazioni(chat_id, "Non hai segnato nessun tempo\n\n<b>Tieni premuto sulla scritta blu</b> e poi scrivi il tempo\n(es <b>/setinattivita 7</b>)", self.gruppo)
                 else:
                     try:
                         self.nuovo_tempo=int(dato)
@@ -131,6 +133,29 @@ class Shadowbanbot():
                     self.set_time(msg['chat']['username'],False,chat_id)
             else:
                 self.messaggio.impostazioni(chat_id,"<b>Solo gli admin del gruppo possono utilizzare questo comando!</b>",self.gruppo,inlinekeyboard=self.messaggio.creaInlinekeyboard())
+
+        elif str(msg['text'].lower()).startswith('/settimezone') or str(msg['text'].lower()).startswith('/settimezone'):
+            if informazioni_utente['status'] == 'creator' or informazioni_utente['status'] == 'administrator':
+                dato = self.messaggio.isVuoto(msg['text'])
+                if dato is None:
+                    self.messaggio.impostazioni(chat_id, "Non hai segnato nessun fuso orario<b>\n\nTieni premuto sulla scritta blu</b> e poi inserisci il fuso orario\n(es <b>/settimezone Europe/Rome</b>)", self.gruppo)
+                else:
+                    try:
+                        try:
+                            fuso_array=dato.split("/")
+                            fuso_orario=fuso_array[0].capitalize()+"/"+fuso_array[1].capitalize()
+                        except:
+                            fuso_orario=dato.capitalize()
+                        ora_attuale(fuso_orario.strip())
+                        self.database.aggiorna_fuso_orario(fuso_orario,chat_id)
+                        self.messaggio.impostazioni(chat_id,"Il nuovo fuso orario è\n<b>"+fuso_orario+"</b>",self.gruppo,inlinekeyboard=self.messaggio.creaInlinekeyboard())
+                    except:
+                        self.messaggio.impostazioni(chat_id,"Il fuso orario inserito non è valido, riprova.\n\nLa lista dei Fuso orari la trovi sul seguente sito <a href='https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568'>FUSO ORARI</a>",self.gruppo)
+
+            else:
+                self.messaggio.impostazioni(chat_id,
+                                                "<b>Solo gli admin del gruppo possono utilizzare questo comando!</b>",
+                                                self.gruppo, inlinekeyboard=self.messaggio.creaInlinekeyboard())
 
         elif str(msg['text'].lower()).startswith('/lista_inattivi'):
             self.messaggio.impostazioni(chat_id, self.lista_inattivi(chat_id),self.gruppo,
@@ -145,8 +170,8 @@ class Shadowbanbot():
             if utente is None:
                 bot.sendMessage(chat_id, "L'utente selezionato è un <b>admin</b> o un <b>bot</b> e non si può vedere l'inattività",parse_mode='HTML')
             else:
-                messaggio = "\nGiorno previsto del ban se non scrive\n\n<b>" + utente.nome + "</b> (" + dataItaliana(utente.data_ban) + ")"
-                messaggio = messaggio + "\n\n<b>Data attuale</b>: " + dataItaliana(datetime.now())
+                messaggio = "\nGiorno previsto del ban se non scrive\n\n<b>" + utente.nome + "</b> (" + utente.data_ban.strftime("%d/%m/%Y") + ")"
+                messaggio = messaggio + "\n\n<b>Data attuale</b>:\n" + ora_attuale(self.gruppo.fuso_orario).strftime("%d/%m/%Y, %H:%M:%S")
                 bot.sendMessage(chat_id, messaggio,parse_mode='HTML')
 
         elif msg['text'].startswith('/help'):
@@ -243,8 +268,15 @@ class Shadowbanbot():
         messaggio = "<b>LISTA UTENTI INATTIVI:</b>\n(Giorno ban)\n"
         lista_utenti = sorted(lista_utenti, key=attrgetter("data_ban"))
         for utente in lista_utenti:
-            messaggio = messaggio + "\n<b>" + utente.nome + "</b> (" +dataItaliana(utente.data_ban)+")"
-        messaggio=messaggio+"\n\n<b>Data attuale</b>: "+dataItaliana(datetime.now())
+            messaggio = messaggio + "\n<b>" + utente.nome + "</b> ("+utente.data_ban.strftime("%d/%m/%Y")+")"
+
+        try:
+            fuso_array=self.gruppo.fuso_orario.split("/")
+            citta_fuso=fuso_array[1]
+        except:
+            citta_fuso=self.gruppo.fuso_orario
+        messaggio=messaggio+"\n\n<b>Data attuale</b>:\n"+ora_attuale(self.gruppo.fuso_orario).strftime("%d/%m/%Y, %H:%M")+\
+                  "\n\n<b>Fuso orario</b>: "+citta_fuso
 
         return messaggio
 
@@ -274,7 +306,7 @@ class Shadowbanbot():
         return lista_gruppo
 
     def ritorna_utente(self, id_gruppo, id_utente, nome):
-        ora_ban=self.nuova_data_ban(datetime.now())
+        ora_ban=self.nuova_data_ban(ora_attuale(self.gruppo.fuso_orario))
         user = Utente(id_gruppo, id_utente, nome, ora_ban)
         return user
 
@@ -282,13 +314,13 @@ class Shadowbanbot():
         gruppo = self.database.trova_gruppo(chat_id)
         if gruppo is None:
             self.database.aggiungi_gruppo(chat_id)
-            self.gruppo = Gruppo(chat_id,7,"ban")
+            self.gruppo = Gruppo(chat_id)
             lista_utenti = self.ritorna_lista_membri_gruppo(chat_id, username)
             for utente in lista_utenti:
                 self.database.aggiungi_membro(utente)
 
         else:
-            self.gruppo = Gruppo(chat_id, int(gruppo[1]), gruppo[2])
+            self.gruppo = Gruppo(chat_id, int(gruppo[1]), gruppo[2],gruppo[3],gruppo[4])
 
     #script che si lancia ogni giorno alle 23:55
     def controlla_ban(self):

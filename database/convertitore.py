@@ -1,10 +1,13 @@
+from datetime import datetime
+from pytz import timezone
+
 def parola_giorno(tempo):
     if tempo == 1:
         return "giorno"
     else:
         return "giorni"
 
-def dataItaliana(data):
-        dataMostrare = str(data.strftime("%x")).split("/")
-        dataMess = dataMostrare[1] + "/" + dataMostrare[0] + "/" + dataMostrare[2]
-        return dataMess
+def ora_attuale(fuso_orario):
+    return datetime.now().astimezone(timezone(fuso_orario))
+
+#print(datetime.now().astimezone(timezone("Europe/Rome")))
