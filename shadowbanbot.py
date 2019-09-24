@@ -329,7 +329,8 @@ class Shadowbanbot():
         lista_gruppi=self.database.ritorna_lista_gruppi()
         for gruppo in lista_gruppi:
             for utente in gruppo[1]:
-                tempo_rimasto=utente.data_ban-datetime.now()
+                data=datetime.now()
+                tempo_rimasto=utente.data_ban-datetime(data.year,data.month,data.day)
                 codice=utente.istimeban(self.bot,int(tempo_rimasto.days),gruppo[0].punizione)
                 if codice==0:
                     self.database.rimuovi_utente(utente.id_utente,utente.id_gruppo)
