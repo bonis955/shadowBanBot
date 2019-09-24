@@ -1,7 +1,7 @@
 #vers 1.2
 
 from tokenbot import *
-from database.convertitore import ora_attuale
+from database.convertitore import *
 import telepot
 from operator import  attrgetter
 from utente import Utente
@@ -170,8 +170,10 @@ class Shadowbanbot():
             if utente is None:
                 bot.sendMessage(chat_id, "L'utente selezionato è un <b>admin</b> o un <b>bot</b> e non si può vedere l'inattività",parse_mode='HTML')
             else:
+                data_ban = utente.data_ban-timedelta(days=int(self.gruppo.giorni_ban))
+                giorni_rimasti = utente.data_ban-data_ban
                 messaggio = "\nGiorno previsto del ban se non scrive\n\n<b>" + utente.nome + "</b> (" + utente.data_ban.strftime("%d/%m/%Y") + ")"
-                messaggio = messaggio + "\n\n<b>Data attuale</b>:\n" + ora_attuale(self.gruppo.fuso_orario).strftime("%d/%m/%Y, %H:%M:%S")
+                messaggio = messaggio + "\n\n<b>Ultimo messaggio</b>:\n" + data_ban.strftime("%d/%m/%Y")+"\n\n<b>Tempo rimasto</b>: "+str(giorni_rimasti.days)+" "+parola_giorno(giorni_rimasti.days)
                 bot.sendMessage(chat_id, messaggio,parse_mode='HTML')
 
         elif msg['text'].startswith('/help'):
