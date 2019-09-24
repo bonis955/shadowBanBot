@@ -114,7 +114,7 @@ class Shadowbanbot():
         self.lista_utenti = self.database.ritorna_lista_utenti(chat_id)
 
         if msg['text'].startswith('/start') or msg['text']==('/start@shadowbanbot'):
-            self.messaggio.impostazioni(chat_id, "Ciao benvenuto nel shadow ban bot dove potrai gestire in maniera automatica gli utenti inattivi del tuo gruppo\n\n❗❗❗❗❗❗❗❗\n<b>N.B IL BOT DEVE ESSERE AMMINISTRATORE O NON FUNZIONERÀ</b>\n❗❗❗❗❗❗❗❗\n\nvers 1.2", self.gruppo, inlinekeyboard=self.messaggio.creaInlinekeyboard())
+            self.messaggio.impostazioni(chat_id, "Ciao benvenuto nel shadow ban bot dove potrai gestire in maniera automatica gli utenti inattivi del tuo gruppo\n\n❗❗❗❗❗❗❗❗\n<b>N.B IL BOT DEVE ESSERE AMMINISTRATORE O NON FUNZIONERÀ</b>\n❗❗❗❗❗❗❗❗\n\nvers 1.3", self.gruppo, inlinekeyboard=self.messaggio.creaInlinekeyboard())
 
         elif str(msg['text'].lower()).startswith('/setinattivita'):
             if informazioni_utente['status'] == 'creator' or informazioni_utente['status'] == 'administrator':
@@ -334,6 +334,7 @@ class Shadowbanbot():
                 codice=utente.istimeban(self.bot,int(tempo_rimasto.days),gruppo[0].punizione)
                 if codice==0:
                     self.database.rimuovi_utente(utente.id_utente,utente.id_gruppo)
+                    t.sleep(1)
                 elif codice==2:
                     bot.sendMessage(utente.id_gruppo,"Mi dispiace ma il bot non è amministratore!\n\nz<b>Metti il bot amministratore del gruppo o non funzionerà</b>",parse_mode='HTML')
                     break
@@ -347,7 +348,7 @@ class Shadowbanbot():
                 for utente_database in gruppo[1]:
                     self.database.rimuovi_utente(utente_database.id_utente, utente_database.id_gruppo)
 
-            else:
+            elif len(gruppo[1])>len(gruppo_attuale):
                 for utente_database in gruppo[2]:
                     utentePresente=False
                     for utente_presente in gruppo_attuale:
