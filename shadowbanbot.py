@@ -297,9 +297,13 @@ class Shadowbanbot():
         lista_gruppo=[]
         for utente in dati:
             if not utente.bot:
-                informazioni_utente = bot.getChatMember(chat_id, utente.id)
-                if informazioni_utente['status']!='creator' and informazioni_utente['status']!='administrator':
-                    user=self.ritorna_utente(chat_id, utente.id, utente.first_name)
+                try:
+                    informazioni_utente = bot.getChatMember(chat_id, utente.id)
+                    if informazioni_utente['status']!='creator' and informazioni_utente['status']!='administrator':
+                        user=self.ritorna_utente(chat_id, utente.id, utente.first_name)
+                        lista_gruppo.append(user)
+                except:
+                    user = self.ritorna_utente(chat_id, utente.id, utente.first_name)
                     lista_gruppo.append(user)
 
         client.disconnect()
