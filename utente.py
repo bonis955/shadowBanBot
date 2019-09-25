@@ -1,4 +1,5 @@
 import telepot
+from database.convertitore import nome_link
 
 class Utente:
 
@@ -18,8 +19,14 @@ class Utente:
                 else:
                     messaggio="bannato"
                 bot.sendMessage(self.id_gruppo,
-                                    "L'utente <b>"+self.nome+"</b> è stato "+messaggio+" dal gruppo per inattività ⚠", parse_mode='HTML')
+                                    "L'utente "+nome_link(self.id_utente,self.nome)+" è stato "+messaggio+" dal gruppo per inattività 🚫", parse_mode='HTML')
                 return 0
+            elif tempo_rimasto==1:
+                bot.sendMessage(self.id_gruppo,
+                                nome_link(self.id_utente,self.nome)+" hai ancora un giorno di tempo per scrivere ⚠",
+                                parse_mode='HTML')
+                return 4
+
             else:
                 return 1
         except telepot.exception.NotEnoughRightsError:
