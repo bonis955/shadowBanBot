@@ -1,4 +1,4 @@
-#vers 1.3
+#vers 1.3.1
 
 import asyncio
 import threading
@@ -40,6 +40,38 @@ class Shadowbanbot():
         self.database = Gestione_database(connect)
         self.messaggio = Messaggio(bot, self.database)
 
+    def controllo_problemi(self,msg):
+        content_type, chat_type, chat_id = telepot.glance(msg)
+        try:
+            lascia_chat = msg['left_chat_member']['id']
+            if lascia_chat == id_bot:
+                self.database.rimuovi_gruppo(chat_id)
+            else:
+                self.database.rimuovi_utente(msg['from']['id'], chat_id)
+            return False
+        except:
+            pass
+
+        try:
+            msg['chat']['username']
+        except:
+            self.messaggio.uscita_bot(chat_id)
+            return False
+
+        if chat_type == "channel":
+            try:
+                self.bot.leaveChat(chat_id)
+            except:
+                return False
+            return False
+
+        if msg['from']['is_bot']:
+            return False
+
+        return True
+
+
+
     def run_threaded(self):
         while 1:
             schedule.run_pending()
@@ -55,30 +87,10 @@ class Shadowbanbot():
         self.azzero_variabili()
         content_type, chat_type, chat_id = telepot.glance(msg)
         self.attiva_database()
-
-        try:
-            lascia_chat = msg['left_chat_member']['id']
-            if lascia_chat == id_bot:
-                self.database.rimuovi_gruppo(chat_id)
-            else:
-                self.database.rimuovi_utente(msg['from']['id'], chat_id)
-            return
-        except:
-            pass
-
-        try:
-            msg['chat']['username']
-        except:
-            self.messaggio.uscita_bot(chat_id)
+        if not self.controllo_problemi(msg):
             return
 
-        if chat_type=="channel":
-            try:
-                self.bot.leaveChat(chat_id)
-            except:
-                return
-            return
-
+        informazioni_utente = bot.getChatMember(chat_id, msg['from']['id'])
         self.recupera_gruppo(chat_id,msg['chat']['username'])
 
         if chat_type == 'private':
@@ -94,20 +106,18 @@ class Shadowbanbot():
                                 reply_markup=inlineKeyboard, parse_mode='HTML')
             return
 
-        informazioni_utente = bot.getChatMember(chat_id, msg['from']['id'])
+        utente = self.database.trova_utente(msg['from']['id'], chat_id)
+        if utente is None:
+            try:
+                if msg['new_chat_partecipant']['is_bot']:
+                    return
+            except:
+                user=self.ritorna_utente(chat_id, msg['from']['id'], msg['from']['first_name'])
+                self.database.aggiungi_membro(user)
+        else:
+            utente.data_ban=self.nuova_data_ban(ora_attuale(self.gruppo.fuso_orario))
+            self.database.aggiorna_membro(utente)
 
-        if informazioni_utente['status'] != 'creator' and informazioni_utente['status'] != 'administrator':
-            utente = self.database.trova_utente(msg['from']['id'], chat_id)
-            if utente is None:
-                try:
-                    if msg['new_chat_partecipant']['is_bot']:
-                        return
-                except:
-                    user=self.ritorna_utente(chat_id, msg['from']['id'], msg['from']['first_name'])
-                    self.database.aggiungi_membro(user)
-            else:
-                utente.data_ban=self.nuova_data_ban(ora_attuale(self.gruppo.fuso_orario))
-                self.database.aggiorna_membro(utente)
 
         try:
             msg['text']
@@ -117,7 +127,7 @@ class Shadowbanbot():
         self.lista_utenti = self.database.ritorna_lista_utenti(chat_id)
 
         if msg['text'].startswith('/start') or msg['text']==('/start@shadowbanbot'):
-            self.messaggio.impostazioni(chat_id, "Ciao benvenuto nel shadow ban bot dove potrai gestire in maniera automatica gli utenti inattivi del tuo gruppo\n\n❗❗❗❗❗❗❗❗\n<b>N.B IL BOT DEVE ESSERE AMMINISTRATORE O NON FUNZIONERÀ</b>\n❗❗❗❗❗❗❗❗\n\nvers 1.3", self.gruppo, inlinekeyboard=self.messaggio.creaInlinekeyboard())
+            self.messaggio.impostazioni(chat_id, "Ciao benvenuto nel shadow ban bot dove potrai gestire in maniera automatica gli utenti inattivi del tuo gruppo\n\n❗❗❗❗❗❗❗❗\n<b>N.B IL BOT DEVE ESSERE AMMINISTRATORE O NON FUNZIONERÀ</b>\n❗❗❗❗❗❗❗❗\n\nvers 1.3.1", self.gruppo, inlinekeyboard=self.messaggio.creaInlinekeyboard())
 
         elif str(msg['text'].lower()).startswith('/setinattivita'):
             if informazioni_utente['status'] == 'creator' or informazioni_utente['status'] == 'administrator':
@@ -300,14 +310,8 @@ class Shadowbanbot():
         lista_gruppo=[]
         for utente in dati:
             if not utente.bot:
-                try:
-                    informazioni_utente = bot.getChatMember(chat_id, utente.id)
-                    if informazioni_utente['status']!='creator' and informazioni_utente['status']!='administrator':
-                        user=self.ritorna_utente(chat_id, utente.id, utente.first_name)
-                        lista_gruppo.append(user)
-                except:
-                    user = self.ritorna_utente(chat_id, utente.id, utente.first_name)
-                    lista_gruppo.append(user)
+                user=self.ritorna_utente(chat_id, utente.id, utente.first_name)
+                lista_gruppo.append(user)
 
         client.disconnect()
         loop.stop()
@@ -348,7 +352,8 @@ class Shadowbanbot():
                     bot.sendMessage(utente.id_gruppo,"Mi dispiace ma il bot non è amministratore!\n\nz<b>Metti il bot amministratore del gruppo o non funzionerà</b>",parse_mode='HTML')
                     break
                 elif codice==3:
-                    bot.sendMessage(utente.id_gruppo,"Mi dispiace ma non è possibile rimuovere <b>"+utente.nome+ "</b> un amministratore, dovrai rimuoverlo manualmente</b>",parse_mode='HTML')
+                    bot.sendMessage(utente.id_gruppo,"Mi dispiace ma non è possibile rimuovere <b>"+nome_link(utente.id_utente,utente.nome)+ "</b> un amministratore, dovrai rimuoverlo manualmente",parse_mode='HTML')
+                    self.database.rimuovi_utente(utente.id_utente, utente.id_gruppo)
             informazioni_chat=bot.getChat(gruppo[0].id_gruppo)
             self.gruppo=Gruppo(gruppo[0].id_gruppo, gruppo[0].giorni_ban, gruppo[0].punizione)
             gruppo_attuale=self.ritorna_lista_membri_gruppo(gruppo[0].id_gruppo,informazioni_chat['username'])
