@@ -10,5 +10,4 @@ API_HASH = "ffffffffffff"
 
 #inserisci ivari dati del bot
 id_bot=000000000
-username_bot="@ciao"
 orario_script="00:00"
