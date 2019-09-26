@@ -1,21 +1,24 @@
-#vers 1.2
+#vers 1.3
 
-from tokenbot import *
-from database.convertitore import *
-import telepot
-from operator import  attrgetter
-from utente import Utente
 import asyncio
-from gruppo import Gruppo
-from telethon.sync import TelegramClient
-import psycopg2
-from telepot.namedtuple import *
-from database.gestione_database import Gestione_database
-import schedule
-import time as t
 import threading
-from meassaggi_bot import Messaggio
+import time as t
 from datetime import datetime, timedelta
+from operator import attrgetter
+
+import psycopg2
+import schedule
+import telepot
+from telepot.namedtuple import *
+from telethon.sync import TelegramClient
+
+from convertitore import *
+from database.gestione_database import Gestione_database
+from gruppo import Gruppo
+from meassaggi_bot import Messaggio
+from tokenbot import *
+from utente import Utente
+
 
 class Shadowbanbot():
     lista_utenti=list()

@@ -1,5 +1,7 @@
-from telepot.namedtuple import InlineKeyboardMarkup,InlineKeyboardButton
-from database.convertitore import parola_giorno
+from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
+
+from convertitore import parola_giorno
+
 
 class Messaggio:
     def __init__(self,bot,database):

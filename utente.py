@@ -1,5 +1,7 @@
 import telepot
-from database.convertitore import nome_link
+
+from convertitore import nome_link
+
 
 class Utente:
 
