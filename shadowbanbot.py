@@ -361,7 +361,7 @@ class Shadowbanbot():
                 elif codice==3:
                     bot.sendMessage(utente.id_gruppo,"Mi dispiace ma non è possibile rimuovere <b>"+nome_link(utente.id_utente,utente.nome)+ "</b> un amministratore, dovrai rimuoverlo manualmente",parse_mode='HTML')
                     self.database.rimuovi_utente(utente.id_utente, utente.id_gruppo)
-                else:
+                elif codice==4:
                     messaggio_utenti_avviso=messaggio_utenti_avviso+"\n• "+nome_link(utente.id_utente,utente.nome)
 
             if messaggio_utenti_avviso!="":
