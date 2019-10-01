@@ -91,7 +91,6 @@ class Shadowbanbot():
             return
 
         informazioni_utente = bot.getChatMember(chat_id, msg['from']['id'])
-        self.recupera_gruppo(chat_id,msg['chat']['username'])
 
         if chat_type == 'private':
             if msg['text'] == '/help':
@@ -104,7 +103,11 @@ class Shadowbanbot():
                                 "Ciao a tutti e benvenuti nel shadow ban bot! Funziono solo nei gruppi, se vuoi aggiungermi usa il tasto sottostante\n\n"
                                 "Per sapere i comandi del bot usa /help",
                                 reply_markup=inlineKeyboard, parse_mode='HTML')
+
+            self.database.rimuovi_gruppo(chat_id)
             return
+
+        self.recupera_gruppo(chat_id, msg['chat']['username'])
 
         utente = self.database.trova_utente(msg['from']['id'], chat_id)
         if utente is None:
