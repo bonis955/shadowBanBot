@@ -1,9 +1,9 @@
-#vers 1.4
+#vers 1.4.1
 
 import asyncio
 import threading
 import time as t
-from datetime import datetime, timedelta
+from datetime import timedelta
 from operator import attrgetter
 
 import psycopg2
@@ -127,7 +127,7 @@ class Shadowbanbot():
         self.lista_utenti = self.database.ritorna_lista_utenti(chat_id)
 
         if msg['text'].startswith('/start') or msg['text']==('/start@shadowbanbot'):
-            self.messaggio.impostazioni(chat_id, "Ciao benvenuto nel shadow ban bot dove potrai gestire in maniera automatica gli utenti inattivi del tuo gruppo\n\n❗❗❗❗❗❗❗❗\n<b>N.B IL BOT DEVE ESSERE AMMINISTRATORE O NON FUNZIONERÀ</b>\n❗❗❗❗❗❗❗❗\n\nvers 1.4", self.gruppo, inlinekeyboard=self.messaggio.creaInlinekeyboard())
+            self.messaggio.impostazioni(chat_id, "Ciao benvenuto nel shadow ban bot dove potrai gestire in maniera automatica gli utenti inattivi del tuo gruppo\n\n❗❗❗❗❗❗❗❗\n<b>N.B IL BOT DEVE ESSERE AMMINISTRATORE O NON FUNZIONERÀ</b>\n❗❗❗❗❗❗❗❗\n\nvers 1.4.1", self.gruppo, inlinekeyboard=self.messaggio.creaInlinekeyboard())
 
         elif str(msg['text'].lower()).startswith('/setinattivita'):
             if informazioni_utente['status'] == 'creator' or informazioni_utente['status'] == 'administrator':
@@ -304,7 +304,10 @@ class Shadowbanbot():
         try:
             dati = list(client.get_participants(username_gruppo, aggressive=True))
         except:
-            self.bot.sendMessage(chat_id,"Il gruppo deve essere pubblico affinchè il bot funzioni")
+            self.bot.sendMessage(chat_id,"C'è stato un problema con il bot si prega di riprovare")
+            client.disconnect()
+            loop.stop()
+            loop.close()
             return []
 
         lista_gruppo=[]
@@ -350,9 +353,8 @@ class Shadowbanbot():
                 tempo_rimasto=utente.data_ban-datetime(data.year,data.month,data.day)
                 codice=utente.istimeban(self.bot,int(tempo_rimasto.days),punizione)
                 if codice==0:
-                    messaggio_utenti_bannati = messaggio_utenti_bannati + "\n" + nome_link(utente.id_utente, utente.nome)
+                    messaggio_utenti_bannati = messaggio_utenti_bannati + "\n• " + nome_link(utente.id_utente, utente.nome)
                     self.database.rimuovi_utente(utente.id_utente,utente.id_gruppo)
-                    t.sleep(1)
                 elif codice==2:
                     bot.sendMessage(utente.id_gruppo,"Mi dispiace ma il bot non è amministratore!\n\nz<b>Metti il bot amministratore del gruppo o non funzionerà</b>",parse_mode='HTML')
                     break
@@ -360,10 +362,10 @@ class Shadowbanbot():
                     bot.sendMessage(utente.id_gruppo,"Mi dispiace ma non è possibile rimuovere <b>"+nome_link(utente.id_utente,utente.nome)+ "</b> un amministratore, dovrai rimuoverlo manualmente",parse_mode='HTML')
                     self.database.rimuovi_utente(utente.id_utente, utente.id_gruppo)
                 else:
-                    messaggio_utenti_avviso=messaggio_utenti_avviso+"\n"+nome_link(utente.id_utente,utente.nome)
+                    messaggio_utenti_avviso=messaggio_utenti_avviso+"\n• "+nome_link(utente.id_utente,utente.nome)
 
             if messaggio_utenti_avviso!="":
-                bot.sendMessage(id_gruppo,"I seguenti utenti hanno ancora <b>1 giorno</b> per scrivere ⚠\n"+messaggio_utenti_avviso,parse_mode='HTML')
+                bot.sendMessage(id_gruppo,"I seguenti utenti hanno ancora \n<b>1 giorno</b> per scrivere ⚠\n"+messaggio_utenti_avviso,parse_mode='HTML')
 
             if messaggio_utenti_bannati!="":
                 if punizione == "kick":
