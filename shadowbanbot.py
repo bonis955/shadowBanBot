@@ -370,7 +370,7 @@ class Shadowbanbot():
                     messaggio_punizione = "rimossi"
                 else:
                     messaggio_punizione = "bannati"
-                bot.sendMessage(id_gruppo,"I seguenti utenti sono stati "+messaggio_punizione+" per inattività 👋\n" + messaggio_utenti_bannati)
+                bot.sendMessage(id_gruppo,"I seguenti utenti sono stati "+messaggio_punizione+" per inattività 👋\n" + messaggio_utenti_bannati,parse_mode='HTML')
 
 
             informazioni_chat=bot.getChat(gruppo[0].id_gruppo)
@@ -381,6 +381,7 @@ class Shadowbanbot():
                 for utente_database in gruppo[1]:
                     self.database.rimuovi_utente(utente_database.id_utente, utente_database.id_gruppo)
 
+            #controllo se gli utenti del gruppo coincidono con quelli all'interno del database
             elif len(gruppo[1])>len(gruppo_attuale):
                 for utente_database in gruppo[2]:
                     utentePresente=False
