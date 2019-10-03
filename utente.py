@@ -24,6 +24,8 @@ class Utente:
             return 2
         except telepot.exception.TelegramError:
             return 3
+        except:
+            return 0
 
 
 

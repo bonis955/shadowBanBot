@@ -16,11 +16,9 @@ class Gestione_database():
             self.gestore_database.execute("SELECT * FROM gruppi")
             gruppi = self.gestore_database.fetchall()
             for gruppo in gruppi:
-                self.gestore_database.execute("SELECT * FROM utenti WHERE id_gruppo=%s AND data_ban=%s",[int(gruppo[0]),datetime.now().astimezone().strftime("%x")])
-                dati=self.gestore_database.fetchall()
                 self.gestore_database.execute("SELECT * FROM utenti WHERE id_gruppo=%s", [int(gruppo[0])])
                 dati2 = self.gestore_database.fetchall()
-                lista_gruppi.append([Gruppo(gruppo[0],gruppo[1],gruppo[2]),self.costruisci_lista(dati2),self.costruisci_lista(dati)])
+                lista_gruppi.append([Gruppo(gruppo[0],gruppo[1],gruppo[2]),self.costruisci_lista(dati2)])
         return lista_gruppi
 
     def costruisci_lista(self,utenti):

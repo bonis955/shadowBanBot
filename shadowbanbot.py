@@ -1,4 +1,4 @@
-#vers 1.4.1
+#vers 1.4.2
 
 import asyncio
 import threading
@@ -130,7 +130,7 @@ class Shadowbanbot():
         self.lista_utenti = self.database.ritorna_lista_utenti(chat_id)
 
         if msg['text'].startswith('/start') or msg['text']==('/start@shadowbanbot'):
-            self.messaggio.impostazioni(chat_id, "Ciao benvenuto nel shadow ban bot dove potrai gestire in maniera automatica gli utenti inattivi del tuo gruppo\n\n❗❗❗❗❗❗❗❗\n<b>N.B IL BOT DEVE ESSERE AMMINISTRATORE O NON FUNZIONERÀ</b>\n❗❗❗❗❗❗❗❗\n\nvers 1.4.1", self.gruppo, inlinekeyboard=self.messaggio.creaInlinekeyboard())
+            self.messaggio.impostazioni(chat_id, "Ciao benvenuto nel shadow ban bot dove potrai gestire in maniera automatica gli utenti inattivi del tuo gruppo\n\n❗❗❗❗❗❗❗❗\n<b>N.B IL BOT DEVE ESSERE AMMINISTRATORE O NON FUNZIONERÀ</b>\n❗❗❗❗❗❗❗❗\n\nvers 1.4.2", self.gruppo, inlinekeyboard=self.messaggio.creaInlinekeyboard())
 
         elif str(msg['text'].lower()).startswith('/setinattivita'):
             if informazioni_utente['status'] == 'creator' or informazioni_utente['status'] == 'administrator':
@@ -347,6 +347,7 @@ class Shadowbanbot():
         self.attiva_database()
         lista_gruppi=self.database.ritorna_lista_gruppi()
         for gruppo in lista_gruppi:
+            self.attiva_database()
             id_gruppo=gruppo[0].id_gruppo
             punizione=gruppo[0].punizione
             messaggio_utenti_avviso = ""
@@ -357,13 +358,23 @@ class Shadowbanbot():
                 codice=utente.istimeban(self.bot,int(tempo_rimasto.days),punizione)
                 if codice==0:
                     messaggio_utenti_bannati = messaggio_utenti_bannati + "\n• " + nome_link(utente.id_utente, utente.nome)
-                    self.database.rimuovi_utente(utente.id_utente,utente.id_gruppo)
+                    try:
+                        self.database.rimuovi_utente(utente.id_utente,utente.id_gruppo)
+                    except:
+                        self.attiva_database()
+                        try:
+                            self.database.rimuovi_utente(utente.id_utente, utente.id_gruppo)
+                        except:
+                            pass
                 elif codice==2:
                     bot.sendMessage(utente.id_gruppo,"Mi dispiace ma il bot non è amministratore!\n\nz<b>Metti il bot amministratore del gruppo o non funzionerà</b>",parse_mode='HTML')
                     break
                 elif codice==3:
                     bot.sendMessage(utente.id_gruppo,"Mi dispiace ma non è possibile rimuovere <b>"+nome_link(utente.id_utente,utente.nome)+ "</b> un amministratore, dovrai rimuoverlo manualmente",parse_mode='HTML')
-                    self.database.rimuovi_utente(utente.id_utente, utente.id_gruppo)
+                    try:
+                        self.database.rimuovi_utente(utente.id_utente, utente.id_gruppo)
+                    except:
+                        pass
                 elif codice==4:
                     messaggio_utenti_avviso=messaggio_utenti_avviso+"\n• "+nome_link(utente.id_utente,utente.nome)
 
@@ -381,22 +392,27 @@ class Shadowbanbot():
             informazioni_chat=bot.getChat(gruppo[0].id_gruppo)
             self.gruppo=Gruppo(gruppo[0].id_gruppo, gruppo[0].giorni_ban, gruppo[0].punizione)
             gruppo_attuale=self.ritorna_lista_membri_gruppo(gruppo[0].id_gruppo,informazioni_chat['username'])
+            gruppo_database=self.database.ritorna_lista_utenti(id_gruppo)
 
-            if len(gruppo_attuale)==0:
+            if len(gruppo_attuale)==1:
+                self.database.rimuovi_gruppo(id_gruppo)
                 for utente_database in gruppo[1]:
                     self.database.rimuovi_utente(utente_database.id_utente, utente_database.id_gruppo)
 
             #controllo se gli utenti del gruppo coincidono con quelli all'interno del database
-            elif len(gruppo[1])>len(gruppo_attuale):
-                for utente_database in gruppo[2]:
+            elif len(gruppo_database)>len(gruppo_attuale):
+                for utente_database in gruppo_database:
                     utentePresente=False
+                    if len(gruppo_database)==len(gruppo_attuale):
+                        break
                     for utente_presente in gruppo_attuale:
                         if utente_presente.id_utente==utente_database.id_utente:
                             utentePresente=True
                             break
                     if not utentePresente:
                         self.database.rimuovi_utente(utente_database.id_utente, utente_database.id_gruppo)
-            t.sleep(10)
+                        list(gruppo_database).remove(utente_database)
+            t.sleep(3)
 
         return
 
